@@ -14,6 +14,8 @@ services:
     plan: free
     healthCheckPath: /actuator/health
     envVars:
+      - key: PORT
+        value: 8080
       - key: DATABASE_URL
         fromDatabase:
           name: apiwise-db
