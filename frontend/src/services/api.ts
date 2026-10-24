@@ -1,7 +1,7 @@
 const getApiBaseUrl = (): string => {
   const customUrl = typeof window !== 'undefined' ? localStorage.getItem('apiwise_api_url') : null;
   if (customUrl) return customUrl.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  const envUrl = (import.meta as any)?.env?.VITE_API_BASE_URL;
   if (envUrl) return envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
   return '';
 };
