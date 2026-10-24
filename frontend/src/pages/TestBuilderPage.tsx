@@ -126,8 +126,56 @@ export const TestBuilderPage: React.FC = () => {
     loadData();
   }, [selectedRequestId]);
 
+  const handleCreateSampleRequest = async () => {
+    if (!activeWorkspace) return;
+    try {
+      setLoading(true);
+      // 1. Get or create project
+      let projs = await projectService.list(activeWorkspace.id);
+      let proj = projs[0];
+      if (!proj) {
+        proj = await projectService.create(activeWorkspace.id, {
+          name: 'Quickstart API Project',
+          description: 'Getting started sample APIs and test suites',
+        });
+      }
+      // 2. Get or create collection
+      let cols = await collectionService.list(proj.id);
+      let col = cols[0];
+      if (!col) {
+        col = await collectionService.create(proj.id, {
+          name: 'Demo Endpoints',
+          description: 'Sample collection for automated testing',
+        });
+      }
+      // 3. Create sample request
+      const newReq = await requestService.create(col.id, {
+        name: 'Get Sample JSON',
+        method: 'GET',
+        url: 'https://httpbin.org/json',
+        headers: '[{"key":"Accept","value":"application/json","enabled":true}]',
+        queryParams: '[]',
+        authConfig: '{}',
+        bodyType: 'NONE',
+        orderIndex: 0,
+      });
+
+      // 4. Update available requests state and select it
+      setAvailableRequests([newReq]);
+      setSelectedRequestId(newReq.id);
+      setCurrentRequest(newReq);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create sample request');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRunAssertions = async () => {
-    if (!selectedRequestId) return;
+    if (!selectedRequestId) {
+      alert('Please create or select a saved request first.');
+      return;
+    }
     setIsExecuting(true);
     setExecutionResult(null);
     try {
@@ -265,41 +313,96 @@ export const TestBuilderPage: React.FC = () => {
             }}
             className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-indigo-500 max-w-xs"
           >
-            {availableRequests.map((r) => (
-              <option key={r.id} value={r.id}>
-                [{r.method}] {r.name}
-              </option>
-            ))}
+            {availableRequests.length === 0 ? (
+              <option value="">No requests in workspace</option>
+            ) : (
+              availableRequests.map((r) => (
+                <option key={r.id} value={r.id}>
+                  [{r.method}] {r.name}
+                </option>
+              ))
+            )}
           </select>
 
           <button
             onClick={handleRunAssertions}
-            disabled={isExecuting || !selectedRequestId}
+            disabled={isExecuting}
             className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-glow-success disabled:opacity-50 transition-all cursor-pointer"
+            title="Execute request and evaluate assertions"
           >
             <Play className="w-3.5 h-3.5" />
             <span>{isExecuting ? 'Evaluating...' : 'Run Assertions'}</span>
           </button>
 
           <button
-            onClick={handleOpenAiModal}
-            disabled={!selectedRequestId}
+            onClick={() => {
+              if (!selectedRequestId) {
+                if (availableRequests.length === 0) {
+                  handleCreateSampleRequest();
+                } else {
+                  alert('Please select a request from the dropdown first.');
+                }
+                return;
+              }
+              handleOpenAiModal();
+            }}
             className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-semibold shadow-glow transition-all cursor-pointer"
+            title="AI draft assertions generator"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>AI Draft Assertions</span>
           </button>
 
           <button
-            onClick={() => setShowAddModal(true)}
-            disabled={!selectedRequestId}
+            onClick={() => {
+              if (!selectedRequestId) {
+                if (availableRequests.length === 0) {
+                  handleCreateSampleRequest();
+                } else {
+                  alert('Please select a request from the dropdown first.');
+                }
+                return;
+              }
+              setShowAddModal(true);
+            }}
             className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all cursor-pointer"
+            title="Add automated test assertion"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Assertion</span>
           </button>
         </div>
       </div>
+
+      {/* No Requests Banner */}
+      {availableRequests.length === 0 && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h4 className="text-sm font-bold text-amber-300 flex items-center space-x-2">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
+              <span>No Saved Requests in Workspace Yet</span>
+            </h4>
+            <p className="text-xs text-slate-400">
+              Test assertions must be attached to a saved API request. You can create a request in the Request Builder, or click below to generate a sample request right now.
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleCreateSampleRequest}
+              disabled={loading}
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-glow cursor-pointer whitespace-nowrap"
+            >
+              {loading ? 'Creating...' : '✨ Quick Create Sample Request'}
+            </button>
+            <button
+              onClick={() => navigate('/request-builder')}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium cursor-pointer whitespace-nowrap"
+            >
+              Go to Request Builder
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Target Request Info Card */}
       {currentRequest && (

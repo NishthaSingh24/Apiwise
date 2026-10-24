@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
   { name: 'Request Builder', path: '/request-builder', icon: Send },
   { name: 'Collections', path: '/collections', icon: FolderGit2 },
-  { name: 'Test Assertions', path: '/test-builder', icon: ShieldCheck },
+  { name: 'Test Builder', path: '/test-builder', icon: ShieldCheck },
   { name: 'Collection Runner', path: '/runner', icon: PlayCircle },
   { name: 'OpenAPI Import', path: '/openapi', icon: FileCode2 },
   { name: 'Environments', path: '/environments', icon: Layers },
