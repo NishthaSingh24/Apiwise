@@ -1,0 +1,64 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: apiwise-backend
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:apiwise}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:202411@Nish}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+apiwise:
+  jwt:
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000
+  security:
+    allow-loopback: ${ALLOW_LOOPBACK_REQUESTS:false}
+    request-timeout-ms: 30000
+    max-response-size-bytes: 10485760
+    max-concurrent-requests: 10
+  encryption:
+    secret-key: ${ENCRYPTION_KEY:ApiWiseSecretEncKeyForEnvVars2026!}
+  ai:
+    enabled: ${AI_ENABLED:false}
+    api-key: ${OPENAI_API_KEY:}
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+logging:
+  level:
+    com.apiwise: INFO
+    org.springframework.security: WARN
+    org.flywaydb: INFO

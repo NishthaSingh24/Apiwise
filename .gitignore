@@ -1,0 +1,29 @@
+# Compiled class files & build artifacts
+**/target/
+**/.mvn/
+*.class
+
+# Node & Frontend build
+**/node_modules/
+**/dist/
+frontend/dist/
+.eslintcache
+*.tsbuildinfo
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE & Editor files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
