@@ -1,0 +1,54 @@
+databases:
+  - name: apiwise-db
+    databaseName: apiwise
+    user: apiwise_user
+    plan: free
+
+services:
+  # Spring Boot 3 Backend
+  - type: web
+    name: apiwise-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: apiwise-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: apiwise-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: apiwise-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: apiwise-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: apiwise-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: ALLOW_LOOPBACK_REQUESTS
+        value: "false"
+
+  # React 18 Static Frontend
+  - type: web
+    name: apiwise-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
