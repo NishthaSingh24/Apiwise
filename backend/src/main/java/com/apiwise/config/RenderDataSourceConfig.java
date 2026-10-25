@@ -43,8 +43,12 @@ public class RenderDataSourceConfig {
             int port = dbUri.getPort() == -1 ? 5432 : dbUri.getPort();
             String host = dbUri.getHost();
             String path = dbUri.getPath();
+            String query = dbUri.getQuery();
 
             String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path;
+            if (query != null && !query.isEmpty()) {
+                jdbcUrl += "?" + query;
+            }
             log.info("Constructed JDBC URL: jdbc:postgresql://{}:{}{}", host, port, path);
 
             HikariDataSource dataSource = new HikariDataSource();
@@ -54,7 +58,11 @@ public class RenderDataSourceConfig {
             dataSource.setDriverClassName("org.postgresql.Driver");
             dataSource.setMaximumPoolSize(10);
             dataSource.setMinimumIdle(2);
-            dataSource.setConnectionTimeout(20000);
+            dataSource.setConnectionTimeout(30000);
+            dataSource.setInitializationFailTimeout(60000);
+            dataSource.setKeepaliveTime(30000);
+            dataSource.setIdleTimeout(300000);
+            dataSource.setMaxLifetime(1200000);
 
             return dataSource;
         } catch (Exception e) {
