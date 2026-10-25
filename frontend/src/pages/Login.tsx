@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Zap, ArrowRight, ShieldCheck, CheckCircle2, Lock } from 'lucide-react';
+import { Zap, ArrowRight, ShieldCheck, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { login } = useAuth();
@@ -20,15 +20,29 @@ export const Login: React.FC = () => {
       await login(email, password);
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      if (err.statusCode === 401 || err.message?.toLowerCase().includes('invalid')) {
+        setError("Account not found or password incorrect. If you haven't registered yet, click 'Create Account' above, or use 'One-Click Demo Sign In' below!");
+      } else {
+        setError(err.message || 'Authentication failed. Please verify credentials.');
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoFill = () => {
+  const handleDemoLogin = async () => {
     setEmail('demo@apiwise.dev');
-    setPassword('DemoPass2026!');
+    setPassword('Password123!');
+    setError(null);
+    setLoading(true);
+    try {
+      await login('demo@apiwise.dev', 'Password123!');
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'Demo authentication failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,7 +53,7 @@ export const Login: React.FC = () => {
 
       <div className="w-full max-w-md relative z-10">
         {/* Brand Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 shadow-glow mb-4">
             <Zap className="w-8 h-8 text-white" />
           </div>
@@ -53,9 +67,25 @@ export const Login: React.FC = () => {
 
         {/* Card */}
         <div className="glass-panel rounded-2xl p-7 shadow-2xl border border-slate-800">
+          {/* Sign In vs Sign Up Navigation Tabs */}
+          <div className="flex rounded-xl bg-slate-950 p-1 mb-5 border border-slate-800">
+            <button
+              type="button"
+              className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-glow"
+            >
+              Sign In
+            </button>
+            <Link
+              to="/register"
+              className="flex-1 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white text-center transition-colors"
+            >
+              Create Account (Sign Up)
+            </Link>
+          </div>
+
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -99,20 +129,17 @@ export const Login: React.FC = () => {
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+          {/* Instant 1-Click Demo Sign In */}
+          <div className="mt-4 pt-4 border-t border-slate-800/80">
             <button
               type="button"
-              onClick={handleDemoFill}
-              className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+              onClick={handleDemoLogin}
+              disabled={loading}
+              className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 text-indigo-300 font-semibold text-xs border border-indigo-500/30 flex items-center justify-center space-x-2 transition-all cursor-pointer shadow-glow-sm"
             >
-              Auto-fill Demo
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>⚡ One-Click Demo Sign In (No signup needed)</span>
             </button>
-            <Link
-              to="/register"
-              className="text-slate-400 hover:text-white font-medium transition-colors"
-            >
-              Don't have an account? <span className="text-indigo-400 font-semibold">Sign up</span>
-            </Link>
           </div>
         </div>
 
