@@ -1,12 +1,24 @@
-const getApiBaseUrl = (): string => {
-  const customUrl = typeof window !== 'undefined' ? localStorage.getItem('apiwise_api_url') : null;
-  if (customUrl) return customUrl.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-  const envUrl = (import.meta as any)?.env?.VITE_API_BASE_URL;
-  if (envUrl) return envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
-  return '';
+const formatApiUrl = (raw?: string | null): string => {
+  if (!raw || raw === 'undefined' || raw === 'null') return '';
+  let url = raw.trim().replace(/\/api\/v1\/?$/, '').replace(/\/+$/, '');
+  if (!url) return '';
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+  return url;
 };
 
-const BASE_URL = `${getApiBaseUrl()}/api/v1`;
+export const getApiBaseUrl = (): string => {
+  const customUrl = typeof window !== 'undefined' ? localStorage.getItem('apiwise_api_url') : null;
+  if (customUrl) return formatApiUrl(customUrl);
+  const envUrl = (import.meta as any)?.env?.VITE_API_BASE_URL;
+  return formatApiUrl(envUrl);
+};
+
+export const getFullApiUrl = (endpoint: string): string => {
+  const base = getApiBaseUrl();
+  return base ? `${base}/api/v1${endpoint}` : `/api/v1${endpoint}`;
+};
 
 export class ApiError extends Error {
   statusCode: number;
@@ -21,7 +33,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('apiwise_token');
+  const token = typeof window !== 'undefined' ? localStorage.getItem('apiwise_token') : null;
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -32,7 +44,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
+  const requestUrl = getFullApiUrl(endpoint);
+
+  const response = await fetch(requestUrl, {
     ...options,
     headers,
   });
@@ -40,7 +54,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (response.status === 401 && !endpoint.includes('/auth/login') && !endpoint.includes('/auth/register')) {
     localStorage.removeItem('apiwise_token');
     localStorage.removeItem('apiwise_user');
-    window.location.href = '/login';
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
     throw new ApiError('Session expired. Please log in again.', 401);
   }
 
@@ -75,7 +91,7 @@ export const api = {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const response = await fetch(`${BASE_URL}${endpoint}`, { method: 'GET', headers });
+    const response = await fetch(getFullApiUrl(endpoint), { method: 'GET', headers });
     if (!response.ok) {
       throw new ApiError('Failed to download file', response.status);
     }

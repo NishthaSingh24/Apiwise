@@ -24,10 +24,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('apiwise_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('apiwise_user') : null;
+      return saved && saved !== 'undefined' && saved !== 'null' ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('apiwise_token'));
+  const [token, setToken] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('apiwise_token') : null));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
