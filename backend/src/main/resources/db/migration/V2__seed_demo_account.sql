@@ -5,12 +5,12 @@ INSERT INTO users (id, email, password_hash, full_name, role, created_at, update
 VALUES (
     'a0000000-0000-0000-0000-000000000001',
     'demo@apiwise.dev',
-    '$2a$10$meKjWHH4AmcP7KbjaxgNy.eyYoi6JHIRhHEFHib3ceo.KCV/I2Qd6',
+    '$2a$10$EznCDaE60bckRHHYDJwHxOxnL.aVNfKq0b1BMGR92wtrp18Ar.Eym',
     'Demo Lead Engineer',
     'ROLE_USER',
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
-) ON CONFLICT (email) DO NOTHING;
+) ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash;
 
 INSERT INTO workspaces (id, name, slug, description, owner_id, created_at, updated_at)
 VALUES (

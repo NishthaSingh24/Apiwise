@@ -32,11 +32,11 @@ export const Login: React.FC = () => {
 
   const handleDemoLogin = async () => {
     setEmail('demo@apiwise.dev');
-    setPassword('Password123!');
+    setPassword('ApiWise#2026!DemoSecure');
     setError(null);
     setLoading(true);
     try {
-      await login('demo@apiwise.dev', 'Password123!');
+      await login('demo@apiwise.dev', 'ApiWise#2026!DemoSecure');
       navigate('/');
     } catch (err: any) {
       setError(err.message || 'Demo authentication failed.');
@@ -140,6 +140,9 @@ export const Login: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               <span>⚡ One-Click Demo Sign In (No signup needed)</span>
             </button>
+            <p className="text-[11px] text-slate-500 text-center mt-2.5">
+              Instant access: <span className="text-slate-400 font-medium">demo@apiwise.dev</span> • <span className="text-slate-400 font-medium">ApiWise#2026!DemoSecure</span>
+            </p>
           </div>
         </div>
 
