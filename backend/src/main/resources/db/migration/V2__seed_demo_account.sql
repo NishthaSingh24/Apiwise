@@ -43,7 +43,7 @@ VALUES (
     CURRENT_TIMESTAMP
 ) ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO environment_variables (id, environment_id, key, value, is_secret, enabled, created_at, updated_at)
+INSERT INTO environment_variables (id, environment_id, var_key, var_value, is_secret, enabled, created_at, updated_at)
 VALUES (
     'e0000000-0000-0000-0000-000000000001',
     'd0000000-0000-0000-0000-000000000001',
